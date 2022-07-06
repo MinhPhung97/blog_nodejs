@@ -1,5 +1,14 @@
-@import '_variables';
+.card-title {
+    text-decoration: none;
+}
 
-h1 {
-    color: $red-color;
+.mf {
+    margin-left: auto;
+}
+
+.avatar-user {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    margin-right: 6px;
 }
