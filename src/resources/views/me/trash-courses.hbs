@@ -1,21 +1,44 @@
-<div class='mt-4'>
+<form name="container-form" method="POST" action="/courses/handle-submit-trash-course-form" class='mt-4'>
   <h2>Remove courses</h2>
-  <table class='table'>
+
+  {{!-- Checkbox Select --}}
+  <div class="d-flex justify-content-start">
+    <div class="form-check mt-4">
+      <input class="form-check-input" type="checkbox" value="" id="checkbox-all">
+      <label class="form-check-label" for="checkbox-all">
+        Select all
+      </label>
+    </div>
+    <select class="check-box-width form-select-sm mt-4 mx-4" name="action" required>
+      <option value="" selected>--- Choose action ---</option>
+      <option value="delete">Delete</option>
+      <option value="restore">Restore</option>
+    </select>
+    <button class="btn btn-primary btn-sm submit-form-btn mt-4 check-all-submit-btn disabled">Apply</button>
+  </div>
+
+  <table class='table mt-4'>
     <thead>
       <tr>
+        <th scope='col'></th>
         <th scope='col'>#</th>
         <th scope='col'>Name</th>
         <th scope='col'>Level</th>
-        <th scope='col'>Time create</th>
+        <th scope='col'>Time deleted</th>
       </tr>
     </thead>
     <tbody>
       {{#each courses}}
       <tr>
+        <td>
+          <div class="form-check">
+            <input type="checkbox" name="courseIds[]" class="form-check-input" value="{{this._id}}">
+          </div>
+        </td>
         <th scope='row'>{{sum @index 1}}</th>
         <td>{{this.name}}</td>
         <td>{{this.level}}</td>
-        <td>{{this.createdAt}}</td>
+        <td>{{this.deletedAt}}</td>
         <td>
           <a href='' class='btn btn-link btn-restore' data-bs-id='{{this._id}}'>
             Restore
@@ -36,7 +59,7 @@
       {{/each}}
     </tbody>
   </table>
-</div>
+</form>
 
 {{! Delete course modal }}
 
@@ -70,19 +93,26 @@
   var courseId;
   var deleteForm = document.forms['deleteCourseForm']
   var restoreForm = document.forms['restoreCourseForm']
-
+  var containerForm = document.forms['container-form']
+  var checkboxAll = document.getElementById('checkbox-all')
+  var courseItemCheckbox = document.querySelectorAll('input[name="courseIds[]"]')
   var deleteCourseModal = document.getElementById('delete-course-modal')
+  var submitFormBtn = document.querySelector('.submit-form-btn')
+
+  //
   deleteCourseModal.addEventListener('show.bs.modal', function (event) {
     var button = event.relatedTarget;
     courseId = button.getAttribute('data-bs-id');
   });
 
+  //
   var btnDeleteCourse = document.getElementById('btn-delete-course');
   btnDeleteCourse.onclick = function () {
     deleteForm.action = '/courses/' + courseId + '/destroy/?_method=DELETE';
     deleteForm.submit()
   };
 
+  //
   var restoreBtn = document.querySelectorAll('.btn-restore')
   restoreBtn.forEach(restoreBtn => {
     restoreBtn.addEventListener('click', function (e) {
@@ -93,4 +123,31 @@
 
     })
   })
+
+  //Select all checkbox
+  checkboxAll.onchange = function () {
+    for (checkboxCourse of courseItemCheckbox) {
+      checkboxCourse.checked = this.checked
+      handleSubmitTrashCourseForm()
+    }
+  }
+
+  //Uncheck select all when click child checkbox
+  for (checkboxCourse of courseItemCheckbox) {
+    checkboxCourse.onchange = function () {
+      var isChecked = courseItemCheckbox.length === document.querySelectorAll('input[name="courseIds[]"]:checked').length
+      checkboxAll.checked = isChecked
+      handleSubmitTrashCourseForm()
+    }
+  }
+
+  //Submit btn
+  function handleSubmitTrashCourseForm() {
+    var isSubmitForm = document.querySelectorAll('input[name="courseIds[]"]:checked').length
+    if (isSubmitForm) {
+      submitFormBtn.classList.remove('disabled')
+    } else {
+      submitFormBtn.classList.add('disabled')
+    }
+  }
 </script>
